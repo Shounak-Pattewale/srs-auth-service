@@ -1,9 +1,20 @@
-import bcrypt
+import argon2
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError, InvalidHash
+
+
+ph = PasswordHasher()
 
 
 def hash_password(plain: str) -> str:
-    return bcrypt.hashpw(plain.encode(), bcrypt.gensalt()).decode()
+    """Hash a password using Argon2id (industry standard)."""
+    return ph.hash(plain)
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return bcrypt.checkpw(plain.encode(), hashed.encode())
+    """Verify a password against a hash using Argon2id."""
+    try:
+        ph.verify(hashed, plain)
+        return True
+    except VerifyMismatchError:
+        return False
