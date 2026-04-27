@@ -1,0 +1,126 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.cache/
+.tox/
+.nox/
+
+# Virtual environment
+venv/
+.env
+.env.*
+!.env.example
+
+# Testing
+.coverage
+htmlcov/
+*.cover
+*.log
+.pytest_cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Claude / AI tooling
+.claude/
+.plans/
+PLAN_*.md
+CLAUDE.md
+.claude-mem/
+graphify-out/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Sphinx docs
+docs/_build/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Cython
+*.c
+*.so
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Flask
+instance/
+.webassets-cache
+
+# Scrapy
+.scrapy
+
+# Docs
+docs/_build/
+
+# Pip
+pip-log.txt
+pip-selfcheck.json
+
+# Wheelhouse
+wheelhouse/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# pytype
+.pytype/
+
+# Cython
+*.c
+*.so
+
+# Environment variables
+.env
+.env.local
+
+# Flask
+instance/
+.webassets-cache
+
+# Scrapy
+.scrapy
+
+# Wheelhouse
+wheelhouse/
+
+# Data
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup

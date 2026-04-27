@@ -1,0 +1,22 @@
+# Core dependencies
+PyJWT>=2.12.1
+bcrypt>=5.0.0
+
+# FastAPI extra
+fastapi>=0.136.1
+pydantic>=2.13.3
+
+# Flask extra
+Flask>=3.1.3
+Flask-Login>=0.6.3
+
+# Dev extra
+pytest>=9.0.3
+pytest-asyncio>=1.3.0
+httpx>=0.28.1
+build>=1.0.0
+twine>=5.0.0
+
+# Runtime dependencies (pinned for stability)
+PyJWT 2.12.1
+bcrypt 5.0.0
