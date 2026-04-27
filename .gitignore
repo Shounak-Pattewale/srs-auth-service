@@ -32,6 +32,9 @@ htmlcov/
 *.swo
 *~
 
+# Test app directory (standalone test apps)
+test-app/
+
 # Claude / AI tooling
 .claude/
 .plans/
