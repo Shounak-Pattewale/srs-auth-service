@@ -1,28 +1,16 @@
 # srs-auth-service
 
-Standalone authentication utilities for Python.
+Standalone authentication utilities for Python. Pure Python — no framework dependencies.
 
 ## Features
 
-- JWT encode/decode (pure Python, PyJWT)
-- Password hashing/verification (bcrypt)
-- FastAPI dependency factories
-- Flask route protection decorator
+- JWT encode/decode (PyJWT, HS256)
+- Password hashing/verification (Argon2id via argon2-cffi)
 
 ## Installation
 
-### As a package dependency
-
 ```bash
 pip install srs-auth-service
-```
-
-Or with extras:
-
-```bash
-pip install srs-auth-service[fastapi]    # FastAPI dependencies
-pip install srs-auth-service[flask]      # Flask-Login
-pip install srs-auth-service[dev]        # Development tools (pytest, httpx)
 ```
 
 ### From GitHub
@@ -38,93 +26,95 @@ source venv/bin/activate
 
 ```
 srs_auth/
-├── __init__.py           # Public API exports
-├── jwt_utils.py          # create_token, decode_token
-├── password.py           # hash_password, verify_password
-├── dependencies.py       # FastAPI: make_get_current_user, make_require_role
-├── middleware.py         # FastAPI: make_role_guard, make_tenant_guard
-└── flask_integration.py  # Flask: role_required decorator
+├── __init__.py     # Public API: create_token, decode_token, hash_password, verify_password
+├── jwt_utils.py    # JWT encode/decode — pure Python
+└── password.py     # Argon2id hash/verify — pure Python
 ```
+
+Framework-specific wrappers (FastAPI dependencies, Flask decorators) belong in the consuming service, not here.
 
 ## API Reference
 
-### JWT Utilities
+### JWT
 
 ```python
 from srs_auth import create_token, decode_token
 
-# Create a token
 token = create_token(
-    payload={"user_id": "123", "role": "buyer"},
+    payload={"user_id": "123", "role": "buyer", "tenant_id": "t1"},
     secret_key="your-secret-key",
     expires_in=3600  # seconds, default 1 hour
 )
 
-# Decode a token
 payload = decode_token(token, secret_key="your-secret-key")
+# raises jwt.ExpiredSignatureError if expired
+# raises jwt.InvalidTokenError if tampered or wrong secret
 ```
 
-### Password Utilities
+### Password
 
 ```python
 from srs_auth import hash_password, verify_password
 
-# Hash a password
-hashed = hash_password("my-password")
-
-# Verify a password
-is_valid = verify_password("my-password", hashed)
+hashed = hash_password("my-password")        # Argon2id hash
+is_valid = verify_password("my-password", hashed)  # True
 ```
 
-### FastAPI Integration
+## Framework Integration
+
+srs-auth-service is framework-agnostic. Each consuming service defines its own wrappers.
+
+### FastAPI example
 
 ```python
-from srs_auth.dependencies import make_get_current_user, make_require_role
-from srs_auth.middleware import make_role_guard, make_tenant_guard
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from srs_auth import decode_token
 
-# Create dependencies
-get_current_user = make_get_current_user("your-secret-key")
-require_admin = make_require_role("admin", "super_admin")
-admin_guard = make_role_guard("your-secret-key", "admin")
-tenant_guard = make_tenant_guard("your-secret-key")
+bearer = HTTPBearer()
 
-# Use in endpoints
-@app.get("/me")
-async def me(user=Depends(get_current_user)):
-    return user
-
-@app.delete("/admin")
-async def delete_admin(user=Depends(require_admin)):
-    return {"status": "ok"}
-
-@app.get("/orders")
-async def list_orders(tenant_id: str, user=Depends(admin_guard)):
-    return {"tenant_id": tenant_id, "user": user}
+def make_get_current_user(secret_key: str):
+    async def get_current_user(
+        credentials: HTTPAuthorizationCredentials = Depends(bearer),
+    ) -> dict:
+        try:
+            return decode_token(credentials.credentials, secret_key)
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail={"code": "error.token_expired"})
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail={"code": "error.invalid_credentials"})
+    return get_current_user
 ```
 
-### Flask Integration
+### Flask example
 
 ```python
-from srs_auth.flask_integration import role_required
+from functools import wraps
+from flask import session, abort
+from srs_auth import decode_token
 
-@app.route("/admin")
-@role_required("admin", "super_admin")
-def admin():
-    return {"status": "ok"}
+def auth_required(secret_key: str):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            token = request.headers.get("Authorization", "").replace("Bearer ", "")
+            try:
+                session["user"] = decode_token(token, secret_key)
+            except Exception:
+                abort(401)
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
 ```
 
-## Roles
+See `test-app/` for full working examples for both frameworks.
 
-- `buyer`
-- `supplier`
-- `admin`
-- `super_admin`
+## Error Codes (convention)
 
-## Error Codes
-
-| Code | Meaning |
-|------|---------|
-| `error.token_expired` | JWT exp claim is in the past |
+| Code | When |
+|------|------|
+| `error.token_expired` | JWT `exp` claim is past |
 | `error.invalid_credentials` | Bad or malformed token |
 | `error.forbidden` | Role not in allowed set |
 | `error.invalid_tenant` | Tenant ID mismatch |
@@ -132,23 +122,16 @@ def admin():
 ## Development
 
 ```bash
-# Install dependencies
 bash setup-dev.sh
 source venv/bin/activate
 
-# Run tests
 pytest -v
-
-# Run with coverage
-pytest --cov=srs_auth --cov-report=html -v
+pytest --cov=srs_auth --cov-report=html -v  # with coverage
 ```
 
 ## Publishing
 
 ```bash
-# Build package
 python3 -m build
-
-# Publish to PyPI
 twine upload dist/*
 ```
