@@ -1,10 +1,10 @@
-# Contributing to srs-auth
+# Contributing to srs-auth-service
 
 ## Development Setup
 
 ```bash
 git clone https://github.com/Shounak-Pattewale/srs-auth-service.git
-cd srs-auth
+cd srs-auth-service
 bash setup-dev.sh
 source venv/bin/activate
 ```

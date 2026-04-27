@@ -1,4 +1,4 @@
-# srs-auth
+# srs-auth-service
 
 Standalone authentication utilities for Python.
 
@@ -14,22 +14,22 @@ Standalone authentication utilities for Python.
 ### As a package dependency
 
 ```bash
-pip install srs-auth
+pip install srs-auth-service
 ```
 
 Or with extras:
 
 ```bash
-pip install srs-auth[fastapi]    # FastAPI dependencies
-pip install srs-auth[flask]      # Flask-Login
-pip install srs-auth[dev]        # Development tools (pytest, httpx)
+pip install srs-auth-service[fastapi]    # FastAPI dependencies
+pip install srs-auth-service[flask]      # Flask-Login
+pip install srs-auth-service[dev]        # Development tools (pytest, httpx)
 ```
 
 ### From GitHub
 
 ```bash
 git clone https://github.com/Shounak-Pattewale/srs-auth-service.git
-cd srs-auth
+cd srs-auth-service
 bash setup-dev.sh
 source venv/bin/activate
 ```
