@@ -39,6 +39,10 @@ def make_require_role(*roles: str) -> Callable:
     """
     Factory — returns a dependency that enforces role membership.
 
+    This returns a FastAPI dependency that:
+    1. First extracts the JWT from Authorization header (via get_current_user)
+    2. Then checks the role is in the allowed list
+
     Usage:
         require_admin = make_require_role("admin", "super_admin")
 
@@ -46,12 +50,17 @@ def make_require_role(*roles: str) -> Callable:
         async def get_orders(user=Depends(require_admin)):
             ...
     """
-    def require_role(user: dict) -> dict:
-        if user.get("role") not in roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail={"code": "error.forbidden"},
-            )
-        return user
+    def make_require_role_inner(secret_key: str) -> Callable:
+        get_current_user = make_get_current_user(secret_key)
 
-    return require_role
+        async def require_role(user: dict = Depends(get_current_user)) -> dict:
+            if user.get("role") not in roles:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail={"code": "error.forbidden"},
+                )
+            return user
+
+        return require_role
+
+    return make_require_role_inner
