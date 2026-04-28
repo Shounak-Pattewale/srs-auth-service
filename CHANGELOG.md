@@ -10,10 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - JWT encode/decode utilities (`create_token`, `decode_token`)
 - Password hashing/verification (`hash_password`, `verify_password`)
-- FastAPI dependency factories (`make_get_current_user`, `make_require_role`)
-- FastAPI middleware guards (`make_role_guard`, `make_tenant_guard`)
-- Flask role decorator (`role_required`)
-- Test suite with 15 passing tests
+- Test suite with 11 passing tests
 
 ### Changed
 - Initial release

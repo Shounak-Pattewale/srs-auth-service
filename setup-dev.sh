@@ -11,6 +11,6 @@ fi
 
 source "$ROOT/venv/bin/activate"
 pip install --upgrade pip
-pip install -e ".[dev,fastapi]"
+pip install -e ".[dev]"
 
 echo "Done. Activate with: source venv/bin/activate"
